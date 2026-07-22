@@ -38,11 +38,19 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   // State navigasi sub-halaman dinamis
   const [currentSubPage, setCurrentSubPage] = useState('Utama'); 
 
+  // Detect ukuran layar untuk responsif dinamis
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // ENDPOINT API ONLINE MOCKAPI
   const TASKS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/events';
   const USERS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/users';
 
-  // Efek untuk memperbarui jam & tanggal ke waktu paling baru TEPAT saat modal dibuka
   useEffect(() => {
     if (isModalOpen) {
       setDate(getTanggalHariIni());
@@ -54,14 +62,12 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   // 1. AMBIL DATA DARI MOCKAPI ONLINE
   const fetchTasksAndUser = async () => {
     try {
-      // Ambil data tugas harian dari server MockAPI
       const tasksRes = await fetch(TASKS_API_URL);
       if (tasksRes.ok) {
         const tasksData = await tasksRes.json();
         setTasks(Array.isArray(tasksData) ? tasksData : []);
       }
 
-      // Ambil data user aktif dari LocalStorage atau MockAPI
       const localUser = JSON.parse(localStorage.getItem('currentUser'));
       if (localUser && localUser.name) {
         setUserName(localUser.name);
@@ -119,7 +125,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     });
 
     if (isConflict) {
-      return alert(`⚠️ NOTIFIKASI BENTROK!\n\nJadwal "${title.trim()}" bertabrakan dengan agenda kuliah atau kerja kamu yang lain di waktu yang sama. Silakan atur ulang jam atau tanggalnya ya, Tia!`);
+      return alert(`⚠️ NOTIFIKASI BENTROK!\n\nJadwal "${title.trim()}" bertabrakan dengan agenda kamu yang lain.`);
     }
 
     const newAgenda = {
@@ -140,7 +146,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
       if (res.ok) {
         setTitle(''); 
         setIsModalOpen(false);
-        alert("✨ Agenda baru berhasil ditambahkan ke Server Online!");
+        alert("✨ Agenda baru berhasil ditambahkan!");
         fetchTasksAndUser(); 
       }
     } catch (error) {
@@ -148,7 +154,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 3. EDIT DATA DI MOCKAPI (UPDATE)
+  // 3. EDIT DATA
   const handleUpdateTask = async (id, currentTask) => {
     if (!editTitle.trim()) return alert("Judul tidak boleh kosong!");
     
@@ -172,16 +178,10 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 4. MENGUBAH STATUS SELESAI DI MOCKAPI (UPDATE)
+  // 4. TOGGLE COMPLETE
   const handleToggleComplete = async (task) => {
-    let updatedCategory = task.category;
+    let updatedCategory = task.category === 'Selesai' ? (task.originalCategory || 'Kuliah') : 'Selesai';
     let updatedOriginalCategory = task.originalCategory || task.category;
-
-    if (task.category === 'Selesai') {
-      updatedCategory = task.originalCategory || 'Kuliah';
-    } else {
-      updatedCategory = 'Selesai';
-    }
 
     try {
       await fetch(`${TASKS_API_URL}/${task.id}`, {
@@ -199,17 +199,17 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 5. HAPUS DATA DARI MOCKAPI (DELETE)
+  // 5. DELETE
   const handleDeleteTask = async (id) => {
     if (window.confirm("Hapus agenda ini secara permanen dari server?")) {
       try {
         const res = await fetch(`${TASKS_API_URL}/${id}`, { method: 'DELETE' });
         if (res.ok) {
-          alert("Agenda berhasil dihapus dari Server!");
+          alert("Agenda berhasil dihapus!");
           fetchTasksAndUser();
         }
       } catch (error) {
-        alert("Gagal menghapus data dari server");
+        alert("Gagal menghapus data");
       }
     }
   };
@@ -227,9 +227,9 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   const organisasiCount = tasks.filter(t => t.category === 'Organisasi' || t.originalCategory === 'Organisasi').length;
 
   const totalTasks = tasks.length || 1;
-  const kuliahPercent = Math.round((tasks.filter(t => t.category === 'Kuliah' || t.originalCategory === 'Kuliah').length / totalTasks) * 100);
-  const kerjaPercent = Math.round((tasks.filter(t => t.category === 'Kerja' || t.originalCategory === 'Kerja').length / totalTasks) * 100);
-  const organisasiPercent = Math.round((tasks.filter(t => t.category === 'Organisasi' || t.originalCategory === 'Organisasi').length / totalTasks) * 100);
+  const kuliahPercent = Math.round((kuliahCount / totalTasks) * 100);
+  const kerjaPercent = Math.round((kerjaCount / totalTasks) * 100);
+  const organisasiPercent = Math.round((organisasiCount / totalTasks) * 100);
 
   const subPageTasks = tasks.filter(t => {
     if (currentSubPage === 'Belum Selesai') return t.category !== 'Selesai';
@@ -238,10 +238,17 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   });
 
   return (
-    <div style={styles.dashboardLayout}>
+    <div style={{
+      ...styles.dashboardLayout,
+      flexDirection: isMobile ? 'column' : 'row'
+    }}>
       
-      {/* SIDEBAR LEFT */}
-      <aside style={styles.sidebar}>
+      {/* SIDEBAR LEFT / TOP (HP) */}
+      <aside style={{
+        ...styles.sidebar,
+        width: isMobile ? '100%' : '280px',
+        padding: isMobile ? '1.2rem' : '2.5rem 1.5rem'
+      }}>
         <div style={styles.sidebarHeader}>
           <div style={styles.sidebarLogoIcon}>T</div>
           <div>
@@ -250,71 +257,75 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
           </div>
         </div>
         
-        <nav style={styles.sidebarNav}>
+        <nav style={{
+          ...styles.sidebarNav,
+          flexDirection: isMobile ? 'row' : 'column',
+          justifyContent: isMobile ? 'space-between' : 'flex-start'
+        }}>
           <div onClick={() => { setSelectedFilter('Semua'); setCurrentSubPage('Utama'); }} style={{ ...styles.sidebarMenu, backgroundColor: currentSubPage === 'Utama' ? 'rgba(255,255,255,0.15)' : 'transparent', color: '#FFFFFF' }}>
-            📊 Ringkasan Panel
+            📊 Ringkasan
           </div>
-          <div onClick={onNavigateToCalendar} style={styles.sidebarMenu}>📅 Kalender Jadwal</div>
+          <div onClick={onNavigateToCalendar} style={styles.sidebarMenu}>📅 Kalender</div>
+          {isMobile && (
+            <div onClick={onNavigateToOnboarding} style={{ ...styles.sidebarMenu, color: '#EF4444' }}>
+              🚪 Keluar
+            </div>
+          )}
         </nav>
 
-        <div style={styles.sidebarFooter}>
-          <button onClick={onNavigateToOnboarding} style={styles.btnLogout}>
-            🚪 Keluar Aplikasi
-          </button>
-          <div style={styles.sidebarVersion}>v1.0.0 © 2026</div>
-        </div>
+        {!isMobile && (
+          <div style={styles.sidebarFooter}>
+            <button onClick={onNavigateToOnboarding} style={styles.btnLogout}>
+              🚪 Keluar Aplikasi
+            </button>
+            <div style={styles.sidebarVersion}>v1.0.0 © 2026</div>
+          </div>
+        )}
       </aside>
 
       {/* MAIN KONTEN */}
-      <main style={styles.mainContent}>
+      <main style={{
+        ...styles.mainContent,
+        width: isMobile ? '100%' : 'calc(100% - 280px)',
+        padding: isMobile ? '1rem' : '2.5rem'
+      }}>
         
         {/* USER WELCOME BANNER CARD */}
-        <header style={{
-          ...styles.mainHeaderCard,
-          opacity: isLoaded ? 1 : 0,
-          transform: isLoaded ? 'translateY(0)' : 'translateY(-15px)',
-          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}>
+        <header style={styles.mainHeaderCard}>
           <div>
             <h1 style={styles.headerTitle}>Halo, {userName.split(' ')[0].toLowerCase()} 👋</h1>
-            <p style={styles.headerSubtitle}>Klik salah satu kartu ringkasan dibawah ini untuk membuka halaman rincian data spesifiknya!.</p>
+            <p style={styles.headerSubtitle}>Klik salah satu kartu ringkasan di bawah ini untuk melihat detailnya.</p>
           </div>
           <div style={styles.headerBtnGroup}>
-            <button onClick={() => setIsModalOpen(true)} style={styles.btnCreate}>➕ Tambah Agenda Baru</button>
-            <button onClick={onNavigateToCalendar} style={styles.btnCalendar}>Lihat Kalender →</button>
+            <button onClick={() => setIsModalOpen(true)} style={styles.btnCreate}>➕ Tambah Agenda</button>
+            <button onClick={onNavigateToCalendar} style={styles.btnCalendar}>Kalender →</button>
           </div>
         </header>
 
         {/* METRICS GRID AREA */}
-        <div style={{
-          ...styles.statsWrapper,
-          opacity: isLoaded ? 1 : 0,
-          transform: isLoaded ? 'translateY(0)' : 'translateY(15px)',
-          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s'
-        }}>
-          
+        <div style={styles.statsWrapper}>
           <div style={styles.gridStatus}>
             <div onClick={() => navigateToSubPage('Belum Selesai')} style={{ ...styles.cardStat, background: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 50%, #FECDD3 100%)', border: currentSubPage === 'Belum Selesai' ? '2px solid #F43F5E' : '1px solid #FB7185' }}>
-              <span style={styles.cardStatLabelDark}>🔴 Belum Selesai (Klik Rincian)</span>
+              <span style={styles.cardStatLabelDark}>🔴 Belum Selesai</span>
               <h3 style={styles.cardStatNumDark}>{uncompletedCount}</h3>
             </div>
             <div onClick={() => navigateToSubPage('Selesai')} style={{ ...styles.cardStat, background: 'linear-gradient(135deg, #F0FDF4 0%, #E6F4EA 50%, #D1FAE5 100%)', border: currentSubPage === 'Selesai' ? '2px solid #10B981' : '1px solid #34D399' }}>
-              <span style={styles.cardStatLabelDark}>🟢 Sudah Selesai (Klik Rincian)</span>
+              <span style={styles.cardStatLabelDark}>🟢 Sudah Selesai</span>
               <h3 style={styles.cardStatNumDark}>{completedCount}</h3>
             </div>
           </div>
 
           <div style={styles.gridCategory}>
             <div onClick={() => navigateToSubPage('Kuliah')} style={{ ...styles.cardStat, background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #BAE6FD 100%)', border: currentSubPage === 'Kuliah' ? '2px solid #3B82F6' : '1px solid #60A5FA' }}>
-              <span style={styles.cardStatLabelDark}>📚 Total Kuliah</span>
+              <span style={styles.cardStatLabelDark}>📚 Kuliah</span>
               <h3 style={styles.cardStatNumDark}>{kuliahCount}</h3>
             </div>
             <div onClick={() => navigateToSubPage('Kerja')} style={{ ...styles.cardStat, background: 'linear-gradient(135deg, #FFFDF5 0%, #FFFBEB 50%, #FEF3C7 100%)', border: currentSubPage === 'Kerja' ? '2px solid #F59E0B' : '1px solid #FBBF24' }}>
-              <span style={styles.cardStatLabelDark}>💼 Total Kerja</span>
+              <span style={styles.cardStatLabelDark}>💼 Kerja</span>
               <h3 style={styles.cardStatNumDark}>{kerjaCount}</h3>
             </div>
             <div onClick={() => navigateToSubPage('Organisasi')} style={{ ...styles.cardStat, background: 'linear-gradient(135deg, #FAF5FF 0%, #FDF4FF 50%, #F5D0FE 100%)', border: currentSubPage === 'Organisasi' ? '2px solid #A855F7' : '1px solid #C084FC' }}>
-              <span style={styles.cardStatLabelDark}>🏢 Total Organisasi</span>
+              <span style={styles.cardStatLabelDark}>🏢 Organisasi</span>
               <h3 style={styles.cardStatNumDark}>{organisasiCount}</h3>
             </div>
           </div>
@@ -327,29 +338,29 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
           <section style={styles.subPageWrapperCard}>
             <div style={styles.subPageHeaderRow}>
               <div>
-                <span style={styles.subPagePreTitle}>SUB-HALAMAN PANEL JADWAL</span>
-                <h2 style={styles.subPageMainTitle}>Lembar Rincian: Kategori {currentSubPage}</h2>
+                <span style={styles.subPagePreTitle}>SUB-HALAMAN PANEL</span>
+                <h2 style={styles.subPageMainTitle}>Rincian: {currentSubPage}</h2>
               </div>
               <button onClick={() => setCurrentSubPage('Utama')} style={styles.btnBackToMainDashboard}>
-                ⬅️ Kembali Ke Ringkasan Utama
+                ⬅️ Kembali
               </button>
             </div>
 
-            <div style={{ overflowX: 'auto', marginTop: '1.5rem' }}>
+            <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
               <table style={styles.dataTable}>
                 <thead>
                   <tr style={styles.tableHeaderRow}>
                     <th style={styles.thStyles}>Status</th>
-                    <th style={styles.thStyles}>Nama Kegiatan / Agenda</th>
+                    <th style={styles.thStyles}>Kegiatan</th>
                     <th style={styles.thStyles}>Kategori</th>
-                    <th style={styles.thStyles}>Waktu Jadwal</th>
-                    <th style={styles.thStyles}>Aksi Pengelolaan</th>
+                    <th style={styles.thStyles}>Waktu</th>
+                    <th style={styles.thStyles}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subPageTasks.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem', color: '#94A3B8', fontWeight: '500' }}>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#94A3B8' }}>
                         Tidak ada agenda harian khusus pada rincian kategori "{currentSubPage}".
                       </td>
                     </tr>
@@ -392,8 +403,8 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
                               <button onClick={() => handleUpdateTask(task.id, task)} style={styles.btnSaveInline}>💾 Simpan</button>
                             ) : (
                               <>
-                                <button onClick={() => { setEditingTaskId(task.id); setEditTitle(task.title); setEditCategory(task.originalCategory || task.category); }} style={styles.btnActionEditComponent}>✏️ Edit</button>
-                                <button onClick={() => handleDeleteTask(task.id)} style={styles.btnActionDeleteComponent}>❌ Hapus</button>
+                                <button onClick={() => { setEditingTaskId(task.id); setEditTitle(task.title); setEditCategory(task.originalCategory || task.category); }} style={styles.btnActionEditComponent}>✏️</button>
+                                <button onClick={() => handleDeleteTask(task.id)} style={styles.btnActionDeleteComponent}>❌</button>
                               </>
                             )}
                           </div>
@@ -408,22 +419,16 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
         )}
 
         {/* MONITORING BOARD GRAPH */}
-        <section style={{
-          ...styles.chartSection,
-          opacity: isLoaded ? 1 : 0,
-          transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s'
-        }}>
-          
+        <section style={styles.chartSection}>
           <div style={styles.chartHeader}>
-            <h3 style={styles.chartTitle}>Traffic & Activity Monitoring</h3>
-            <span style={styles.chartBadge}>Real-time Balance</span>
+            <h3 style={styles.chartTitle}>Activity Monitoring</h3>
+            <span style={styles.chartBadge}>Real-time</span>
           </div>
           
           <div style={styles.chartProgressWrapper}>
             <div style={styles.progressItem}>
               <div style={styles.progressLabelRow}>
-                <span style={styles.progressName}>📚 Beban Tugas Akademik</span>
+                <span style={styles.progressName}>📚 Akademik</span>
                 <span style={styles.progressVal}>{kuliahPercent}%</span>
               </div>
               <div style={styles.progressBarBg}>
@@ -433,7 +438,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
 
             <div style={styles.progressItem}>
               <div style={styles.progressLabelRow}>
-                <span style={styles.progressName}>💼 Alokasi Jam Kerja Shift</span>
+                <span style={styles.progressName}>💼 Kerja</span>
                 <span style={styles.progressVal}>{kerjaPercent}%</span>
               </div>
               <div style={styles.progressBarBg}>
@@ -443,7 +448,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
 
             <div style={styles.progressItem}>
               <div style={styles.progressLabelRow}>
-                <span style={styles.progressName}>🏢 Aktivitas & Rapat Organisasi</span>
+                <span style={styles.progressName}>🏢 Organisasi</span>
                 <span style={styles.progressVal}>{organisasiPercent}%</span>
               </div>
               <div style={styles.progressBarBg}>
@@ -451,7 +456,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
               </div>
             </div>
           </div>
-
         </section>
 
       </main>
@@ -485,26 +489,23 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   );
 };
 
-// Objek Stylesheet Sempurna (Sidebar Tetap di Kiri di Laptop & Konten Rapi)
+// CSS Stylesheet Otomatis Menyesuaikan Layar (Laptop & HP Fleksibel)
 const styles = {
   dashboardLayout: {
     display: 'flex',
-    flexDirection: 'row',
     background: 'linear-gradient(135deg, #EBF3FF 0%, #F5F9FF 100%)',
     minHeight: '100vh',
     fontFamily: '"Inter", sans-serif',
     width: '100%',
-    overflowX: 'hidden'
+    boxSizing: 'border-box'
   },
   sidebar: {
-    width: '280px',
     backgroundColor: '#1E3A8A',
     color: 'white',
-    padding: '2.5rem 1.5rem 1.5rem 1.5rem',
     display: 'flex',
     flexDirection: 'column',
-    gap: '2rem',
-    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)',
+    gap: '1.2rem',
+    boxShadow: '0 4px 20px rgba(30, 58, 138, 0.1)',
     flexShrink: 0,
     boxSizing: 'border-box'
   },
@@ -523,34 +524,30 @@ const styles = {
     alignItems: 'center',
     borderRadius: '10px',
     fontWeight: '900',
-    fontSize: '1.25rem'
+    fontSize: '1.2rem'
   },
   sidebarLogo: {
-    fontSize: '1.35rem',
+    fontSize: '1.25rem',
     fontWeight: '800',
-    margin: 0,
-    letterSpacing: '0.5px'
+    margin: 0
   },
   sidebarSublogo: {
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     color: '#93C5FD',
-    display: 'block',
-    marginTop: '1px'
+    display: 'block'
   },
   sidebarNav: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '0.6rem',
+    gap: '0.5rem',
     flexGrow: 1
   },
   sidebarMenu: {
-    padding: '0.85rem 1.25rem',
-    borderRadius: '12px',
+    padding: '0.6rem 0.9rem',
+    borderRadius: '10px',
     fontWeight: '600',
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     cursor: 'pointer',
-    color: '#93C5FD',
-    transition: 'all 0.3s ease'
+    color: '#93C5FD'
   },
   sidebarFooter: {
     display: 'flex',
@@ -561,24 +558,19 @@ const styles = {
     backgroundColor: '#EF4444',
     color: 'white',
     border: 'none',
-    padding: '0.8rem 1rem',
-    borderRadius: '12px',
+    padding: '0.75rem',
+    borderRadius: '10px',
     fontWeight: '700',
     cursor: 'pointer',
-    fontSize: '0.95rem',
-    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
-    transition: '0.2s'
+    fontSize: '0.85rem'
   },
   sidebarVersion: {
-    fontSize: '0.8rem',
+    fontSize: '0.75rem',
     opacity: 0.4,
     textAlign: 'center'
   },
   mainContent: {
     flexGrow: 1,
-    padding: 'clamp(1.5rem, 3vw, 3.5rem)',
-    overflowY: 'auto',
-    width: 'calc(100% - 280px)',
     boxSizing: 'border-box'
   },
   mainHeaderCard: {
@@ -587,194 +579,168 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: 'clamp(1.25rem, 3vw, 2.25rem)',
-    borderRadius: '24px',
+    padding: '1.25rem',
+    borderRadius: '20px',
     boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid rgba(226, 232, 240, 0.8)',
-    marginBottom: '2rem',
-    gap: '1.25rem',
-    boxSizing: 'border-box'
+    marginBottom: '1.5rem',
+    gap: '1rem'
   },
   headerTitle: {
-    fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+    fontSize: 'clamp(1.3rem, 3vw, 2rem)',
     fontWeight: '900',
     color: '#1E3A8A',
-    margin: 0,
-    letterSpacing: '-0.5px'
+    margin: 0
   },
   headerSubtitle: {
     color: '#64748B',
-    marginTop: '0.5rem',
-    fontSize: '0.9rem',
-    fontWeight: '500'
+    marginTop: '0.3rem',
+    fontSize: '0.85rem'
   },
   headerBtnGroup: {
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.75rem'
+    gap: '0.5rem',
+    flexWrap: 'wrap'
   },
   btnCreate: {
     backgroundColor: '#10B981',
     color: 'white',
-    padding: '0.75rem 1.25rem',
+    padding: '0.65rem 1rem',
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: '10px',
     fontWeight: '700',
     cursor: 'pointer',
-    boxShadow: '0 8px 16px rgba(16, 185, 129, 0.15)',
-    transition: '0.2s',
-    fontSize: '0.9rem'
+    fontSize: '0.85rem'
   },
   btnCalendar: {
     backgroundColor: '#4F46E5',
     color: 'white',
-    padding: '0.75rem 1.25rem',
+    padding: '0.65rem 1rem',
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: '10px',
     fontWeight: '700',
     cursor: 'pointer',
-    boxShadow: '0 8px 16px rgba(79, 70, 229, 0.15)',
-    transition: '0.2s',
-    fontSize: '0.9rem'
+    fontSize: '0.85rem'
   },
   statsWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.25rem',
-    marginBottom: '2rem'
+    gap: '1rem',
+    marginBottom: '1.5rem'
   },
   gridStatus: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '1.25rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+    gap: '1rem'
   },
   gridCategory: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1.25rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+    gap: '1rem'
   },
   cardStat: {
-    padding: '1.5rem 1.25rem',
-    borderRadius: '24px',
+    padding: '1.2rem 1rem',
+    borderRadius: '18px',
     cursor: 'pointer',
-    position: 'relative',
-    overflow: 'hidden',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
-    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
     boxSizing: 'border-box'
   },
   cardStatLabelDark: {
     color: '#374151',
-    fontSize: '0.9rem',
-    fontWeight: '800',
-    letterSpacing: '0.3px'
+    fontSize: '0.8rem',
+    fontWeight: '800'
   },
   cardStatNumDark: {
-    fontSize: 'clamp(2.25rem, 5vw, 3.25rem)',
+    fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
     fontWeight: '900',
-    margin: '0.4rem 0 0 0',
-    color: '#111827',
-    lineHeight: '1'
+    margin: '0.2rem 0 0 0',
+    color: '#111827'
   },
   subPageWrapperCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '24px',
-    padding: 'clamp(1.25rem, 3vw, 2.5rem)',
-    boxShadow: '0 15px 35px rgba(30, 58, 138, 0.06)',
+    borderRadius: '20px',
+    padding: '1.25rem',
+    boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid #E2E8F0',
-    marginBottom: '1rem',
-    marginTop: '0.5rem',
-    boxSizing: 'border-box'
+    marginBottom: '1rem'
   },
   subPageHeaderRow: {
     display: 'flex',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid #F1F5F9',
-    paddingBottom: '1rem',
-    gap: '1rem'
+    paddingBottom: '0.75rem'
   },
   subPagePreTitle: {
-    fontSize: '0.7rem',
+    fontSize: '0.65rem',
     color: '#3B82F6',
-    fontWeight: '800',
-    letterSpacing: '1px'
+    fontWeight: '800'
   },
   subPageMainTitle: {
-    margin: '0.25rem 0 0 0',
-    fontSize: '1.25rem',
-    fontWeight: '900',
-    color: '#0F172A'
+    margin: 0,
+    fontSize: '1.1rem',
+    fontWeight: '900'
   },
   btnBackToMainDashboard: {
     backgroundColor: '#1E293B',
     color: 'white',
     border: 'none',
-    padding: '0.6rem 1.1rem',
-    borderRadius: '10px',
-    fontSize: '0.8rem',
+    padding: '0.5rem 0.8rem',
+    borderRadius: '8px',
+    fontSize: '0.75rem',
     fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    cursor: 'pointer'
   },
   chartSection: {
     backgroundColor: 'white',
-    padding: 'clamp(1.25rem, 3vw, 2.5rem)',
-    borderRadius: '24px',
-    boxShadow: '0 12px 40px rgba(30, 58, 138, 0.04)',
+    padding: '1.25rem',
+    borderRadius: '20px',
+    boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid #E2E8F0',
-    marginTop: '1.5rem',
-    boxSizing: 'border-box'
+    marginTop: '1rem'
   },
   chartHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1.5rem'
+    marginBottom: '1rem'
   },
   chartTitle: {
-    fontSize: '1.1rem',
+    fontSize: '1rem',
     fontWeight: '800',
-    color: '#1E293B',
     margin: 0
   },
   chartBadge: {
     backgroundColor: '#EEF2F6',
     color: '#475569',
-    padding: '0.3rem 0.75rem',
-    borderRadius: '8px',
-    fontSize: '0.75rem',
-    fontWeight: '700'
+    padding: '0.2rem 0.5rem',
+    borderRadius: '6px',
+    fontSize: '0.7rem'
   },
   chartProgressWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.25rem'
+    gap: '1rem'
   },
   progressItem: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem'
+    gap: '0.3rem'
   },
   progressLabelRow: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    justifyContent: 'space-between'
   },
   progressName: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    color: '#475569'
+    fontSize: '0.8rem',
+    fontWeight: '700'
   },
   progressVal: {
-    fontSize: '0.85rem',
-    fontWeight: '800',
-    color: '#1E293B'
+    fontSize: '0.8rem',
+    fontWeight: '800'
   },
   progressBarBg: {
     width: '100%',
-    height: '10px',
+    height: '8px',
     backgroundColor: '#F1F5F9',
     borderRadius: '999px',
     overflow: 'hidden'
@@ -782,124 +748,89 @@ const styles = {
   progressBarFill: {
     height: '100%',
     borderRadius: '999px',
-    transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)'
-  },
-  tableSectionWrapper: {
-    marginTop: '1rem'
-  },
-  tableSectionTitle: {
-    fontSize: '1.1rem',
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: '1rem'
-  },
-  emptyTableText: {
-    textAlign: 'center',
-    color: '#94A3B8',
-    fontSize: '0.85rem',
-    padding: '2rem 0',
-    backgroundColor: '#F8FAFC',
-    borderRadius: '12px',
-    border: '1px dashed #E2E8F0'
+    transition: 'width 0.8s ease'
   },
   dataTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    textAlign: 'left',
-    minWidth: '600px'
+    textAlign: 'left'
   },
   tableHeaderRow: {
     borderBottom: '2px solid #E2E8F0',
     backgroundColor: '#F8FAFC'
   },
   thStyles: {
-    padding: '0.85rem',
-    fontSize: '0.8rem',
+    padding: '0.65rem',
+    fontSize: '0.75rem',
     fontWeight: '800',
-    color: '#475569',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    color: '#475569'
   },
   tableBodyRow: {
-    borderBottom: '1px solid #F1F5F9',
-    transition: 'background-color 0.2s ease'
+    borderBottom: '1px solid #F1F5F9'
   },
   tdStyles: {
-    padding: '1rem 0.85rem',
-    verticalAlign: 'middle'
+    padding: '0.75rem 0.65rem',
+    verticalAlign: 'middle',
+    fontSize: '0.8rem'
   },
   taskCheckbox: {
-    transform: 'scale(1.2)',
-    cursor: 'pointer',
-    accentColor: '#10B981'
+    transform: 'scale(1.1)',
+    cursor: 'pointer'
   },
   taskTextSpan: {
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    color: '#1E293B'
+    fontWeight: '700'
   },
   tableTimeSpan: {
-    fontSize: '0.8rem',
-    color: '#64748B',
-    fontWeight: '600'
+    fontSize: '0.75rem',
+    color: '#64748B'
   },
   badgeCategory: {
-    padding: '0.3rem 0.85rem',
-    borderRadius: '9999px',
-    fontSize: '0.7rem',
-    fontWeight: '800',
-    letterSpacing: '0.2px'
+    padding: '0.2rem 0.6rem',
+    borderRadius: '999px',
+    fontSize: '0.65rem',
+    fontWeight: '800'
   },
   actionBtnGroup: {
     display: 'flex',
-    gap: '0.4rem'
+    gap: '0.3rem'
   },
   btnActionEditComponent: {
     backgroundColor: '#3B82F6',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 0.85rem',
-    borderRadius: '8px',
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(59, 130, 246, 0.15)',
-    transition: 'all 0.2s ease'
+    padding: '0.35rem 0.6rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
+    cursor: 'pointer'
   },
   btnActionDeleteComponent: {
     backgroundColor: '#EF4444',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 0.85rem',
-    borderRadius: '8px',
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(239, 68, 68, 0.15)',
-    transition: 'all 0.2s ease'
+    padding: '0.35rem 0.6rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
+    cursor: 'pointer'
   },
   tableInputText: {
-    padding: '0.4rem 0.75rem',
-    borderRadius: '6px',
+    padding: '0.3rem',
+    borderRadius: '4px',
     border: '1px solid #3B82F6',
-    width: '90%'
+    width: '100%'
   },
   tableSelect: {
-    padding: '0.4rem 0.5rem',
-    borderRadius: '6px',
-    border: '1px solid #3B82F6',
-    backgroundColor: 'white'
+    padding: '0.3rem',
+    borderRadius: '4px',
+    border: '1px solid #3B82F6'
   },
   btnSaveInline: {
     backgroundColor: '#10B981',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 0.9rem',
-    borderRadius: '8px',
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    cursor: 'pointer',
-    boxShadow: '0 4px 10px rgba(16, 185, 129, 0.15)'
+    padding: '0.35rem 0.6rem',
+    borderRadius: '6px',
+    fontSize: '0.75rem',
+    cursor: 'pointer'
   },
   modalOverlay: {
     position: 'fixed',
@@ -907,8 +838,8 @@ const styles = {
     left: 0,
     width: '100vw',
     height: '100vh',
-    backgroundColor: 'rgba(15, 23, 42, 0.3)',
-    backdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backdropFilter: 'blur(6px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -918,75 +849,69 @@ const styles = {
   },
   modalContentBox: {
     backgroundColor: 'white',
-    padding: '1.75rem 1.5rem',
-    borderRadius: '24px',
+    padding: '1.5rem',
+    borderRadius: '20px',
     width: '100%',
-    maxWidth: '450px',
+    maxWidth: '400px',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
-    boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
     boxSizing: 'border-box'
   },
   modalContentTitle: {
     margin: 0,
-    fontSize: '1.2rem',
-    fontWeight: '800',
-    color: '#0F172A'
+    fontSize: '1.1rem',
+    fontWeight: '800'
   },
   modalFormWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem'
+    gap: '0.85rem'
   },
   modalInputItem: {
     width: '100%',
-    padding: '0.8rem 1rem',
-    borderRadius: '12px',
+    padding: '0.75rem',
+    borderRadius: '10px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.9rem',
-    backgroundColor: '#F8FAFC',
+    fontSize: '0.85rem',
     boxSizing: 'border-box'
   },
   modalTimeFlex: {
     display: 'flex',
-    gap: '0.75rem'
+    gap: '0.5rem'
   },
   modalInputTime: {
     flex: 1,
-    padding: '0.8rem 1rem',
-    borderRadius: '12px',
+    padding: '0.75rem',
+    borderRadius: '10px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.9rem',
-    backgroundColor: '#F8FAFC',
+    fontSize: '0.85rem',
     boxSizing: 'border-box'
   },
   modalBtnGroup: {
     display: 'flex',
-    gap: '0.75rem',
-    marginTop: '0.25rem'
+    gap: '0.5rem'
   },
   modalBtnSubmit: {
     flex: 2,
     backgroundColor: '#2563EB',
     color: 'white',
-    padding: '0.8rem',
+    padding: '0.75rem',
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: '10px',
     fontWeight: '700',
-    fontSize: '0.95rem',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
+    fontSize: '0.85rem',
+    cursor: 'pointer'
   },
   modalBtnCancel: {
     flex: 1,
     backgroundColor: '#F1F5F9',
     color: '#475569',
-    padding: '0.8rem',
+    padding: '0.75rem',
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: '10px',
     fontWeight: '700',
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     cursor: 'pointer'
   }
 };
