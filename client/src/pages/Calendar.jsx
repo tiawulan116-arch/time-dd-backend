@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const Calendar = ({ onNavigateToDashboard }) => {
   const [tasks, setTasks] = useState([]);
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 15)); // Fokus Juli 2026 sesuai database harianmu
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 15)); // Fokus Juli 2026
   const [isLoaded, setIsLoaded] = useState(false);
 
   // ENDPOINT API MOCKAPI DISESUAIKAN DENGAN DASHBOARD
@@ -185,20 +185,25 @@ const Calendar = ({ onNavigateToDashboard }) => {
             <button onClick={handleCurrentMonth} style={styles.btnTodayBack}>Bulan Ini</button>
           </div>
 
-          {/* Nama-Nama Hari Baris */}
-          <div style={styles.daysOfWeekGrid}>
-            <div style={{ ...styles.dayWeekLabel, color: '#EF4444' }}>Min</div>
-            <div style={styles.dayWeekLabel}>Sen</div>
-            <div style={styles.dayWeekLabel}>Sel</div>
-            <div style={styles.dayWeekLabel}>Rab</div>
-            <div style={styles.dayWeekLabel}>Kam</div>
-            <div style={styles.dayWeekLabel}>Jum</div>
-            <div style={styles.dayWeekLabel}>Sab</div>
-          </div>
+          {/* Wrapper scrollable untuk grid kalender di HP */}
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <div style={{ minWidth: '650px' }}>
+              {/* Nama-Nama Hari Baris */}
+              <div style={styles.daysOfWeekGrid}>
+                <div style={{ ...styles.dayWeekLabel, color: '#EF4444' }}>Min</div>
+                <div style={styles.dayWeekLabel}>Sen</div>
+                <div style={styles.dayWeekLabel}>Sel</div>
+                <div style={styles.dayWeekLabel}>Rab</div>
+                <div style={styles.dayWeekLabel}>Kam</div>
+                <div style={styles.dayWeekLabel}>Jum</div>
+                <div style={styles.dayWeekLabel}>Sab</div>
+              </div>
 
-          {/* Grid Sel Tanggal Utama */}
-          <div style={styles.calendarGridCells}>
-            {renderCalendarCells()}
+              {/* Grid Sel Tanggal Utama */}
+              <div style={styles.calendarGridCells}>
+                {renderCalendarCells()}
+              </div>
+            </div>
           </div>
 
         </section>
@@ -207,23 +212,30 @@ const Calendar = ({ onNavigateToDashboard }) => {
   );
 };
 
-// Objek Stylesheet Vertikal Sempurna
+// Objek Stylesheet Vertikal Responsif Modern
 const styles = {
   calendarLayout: {
     display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     background: 'linear-gradient(135deg, #EBF3FF 0%, #F5F9FF 100%)',
     minHeight: '100vh',
-    fontFamily: '"Inter", sans-serif'
+    fontFamily: '"Inter", sans-serif',
+    width: '100%',
+    overflowX: 'hidden'
   },
   sidebar: {
-    width: '280px',
+    width: '100%',
+    maxWidth: '280px',
     backgroundColor: '#1E3A8A',
     color: 'white',
-    padding: '2.5rem 1.5rem 1.5rem 1.5rem',
+    padding: '2rem 1.25rem',
     display: 'flex',
     flexDirection: 'column',
-    gap: '2.5rem',
-    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)'
+    gap: '1.5rem',
+    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)',
+    flexShrink: 0,
+    boxSizing: 'border-box'
   },
   sidebarHeader: {
     display: 'flex',
@@ -281,22 +293,27 @@ const styles = {
   },
   mainContent: {
     flexGrow: 1,
-    padding: '3rem 3.5rem',
-    overflowY: 'auto'
+    padding: 'clamp(1rem, 3vw, 3.5rem)',
+    overflowY: 'auto',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   mainHeaderCard: {
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: '2.25rem 2.5rem',
+    padding: 'clamp(1.25rem, 3vw, 2.25rem)',
     borderRadius: '24px',
     boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid rgba(226, 232, 240, 0.8)',
-    marginBottom: '2.5rem'
+    marginBottom: '2rem',
+    gap: '1rem',
+    boxSizing: 'border-box'
   },
   headerTitle: {
-    fontSize: '2.25rem',
+    fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
     fontWeight: '900',
     color: '#0F172A',
     margin: 0,
@@ -305,44 +322,47 @@ const styles = {
   headerSubtitle: {
     color: '#64748B',
     marginTop: '0.5rem',
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     fontWeight: '500'
   },
   btnBack: {
     backgroundColor: '#FFFFFF',
     color: '#1E293B',
     border: '1px solid #E2E8F0',
-    padding: '0.75rem 1.5rem',
+    padding: '0.75rem 1.25rem',
     borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
     transition: '0.2s'
   },
   calendarCardBoard: {
     backgroundColor: 'white',
-    padding: '2.5rem',
-    borderRadius: '28px',
+    padding: 'clamp(1.25rem, 3vw, 2.5rem)',
+    borderRadius: '24px',
     boxShadow: '0 12px 40px rgba(30, 58, 138, 0.04)',
-    border: '1px solid #E2E8F0'
+    border: '1px solid #E2E8F0',
+    boxSizing: 'border-box'
   },
   calendarControlHeader: {
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '2rem'
+    marginBottom: '1.5rem',
+    gap: '1rem'
   },
   btnControlGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem'
+    gap: '1rem'
   },
   navArrowBtn: {
     backgroundColor: '#F1F5F9',
     border: 'none',
-    width: '38px',
-    height: '38px',
+    width: '36px',
+    height: '36px',
     borderRadius: '10px',
     fontSize: '1rem',
     fontWeight: '800',
@@ -351,21 +371,21 @@ const styles = {
     transition: '0.2s'
   },
   monthDisplayLabel: {
-    fontSize: '1.5rem',
+    fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
     fontWeight: '900',
     color: '#1E3A8A',
     margin: 0,
-    minWidth: '160px',
+    minWidth: '140px',
     textAlign: 'center'
   },
   btnTodayBack: {
     backgroundColor: '#EEF2F6',
     color: '#1E3A8A',
     border: 'none',
-    padding: '0.6rem 1.25rem',
+    padding: '0.55rem 1.1rem',
     borderRadius: '10px',
     fontWeight: '700',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     cursor: 'pointer'
   },
   daysOfWeekGrid: {
@@ -377,33 +397,33 @@ const styles = {
     paddingBottom: '0.75rem'
   },
   dayWeekLabel: {
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     fontWeight: '800',
     color: '#475569'
   },
   calendarGridCells: {
     display: 'grid',
     gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '0.85rem'
+    gap: '0.65rem'
   },
   calendarCellEmpty: {
     backgroundColor: '#F8FAFC',
-    borderRadius: '16px',
-    minHeight: '120px',
+    borderRadius: '14px',
+    minHeight: '100px',
     opacity: 0.4
   },
   calendarCellActive: {
     border: '1px solid #EEF2F6',
-    borderRadius: '16px',
-    padding: '0.75rem',
-    minHeight: '130px',
+    borderRadius: '14px',
+    padding: '0.6rem',
+    minHeight: '110px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
+    gap: '0.4rem',
     transition: 'all 0.2s ease'
   },
   cellDayNumber: {
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
@@ -411,20 +431,20 @@ const styles = {
   todayIndicator: {
     backgroundColor: '#3B82F6',
     color: 'white',
-    fontSize: '0.65rem',
-    padding: '0.15rem 0.5rem',
+    fontSize: '0.6rem',
+    padding: '0.1rem 0.4rem',
     borderRadius: '6px',
     fontWeight: '700'
   },
   cellTaskContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.4rem',
+    gap: '0.35rem',
     flexGrow: 1,
     overflowY: 'auto'
   },
   taskMiniBadge: {
-    padding: '0.35rem 0.6rem',
+    padding: '0.3rem 0.5rem',
     borderRadius: '8px',
     display: 'flex',
     flexDirection: 'column',
@@ -433,15 +453,15 @@ const styles = {
     transition: '0.15s'
   },
   taskMiniTitle: {
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     fontWeight: '800',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis'
   },
   taskMiniTime: {
-    fontSize: '0.65rem',
-    opacity: 0.7,
+    fontSize: '0.6rem',
+    opacity: 0.75,
     fontWeight: '600'
   }
 };

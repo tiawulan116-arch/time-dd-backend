@@ -153,7 +153,7 @@ const Onboarding = ({ onNavigateToDashboard }) => {
       {/* HERO SECTION */}
       <header style={styles.heroWrapper}>
         <div style={styles.heroBox} data-aos="zoom-in-up" data-aos-duration="1200">
-          <div>
+          <div style={{ flex: 1, width: '100%' }}>
             <h1 style={styles.heroTitle} data-aos="fade-right" data-aos-delay="200">Welcome to TimeDD</h1>
             <p style={styles.heroSubtitle} data-aos="fade-right" data-aos-delay="400">Let's balance your academic tracks easily and efficiently today.</p>
             <button 
@@ -243,7 +243,8 @@ const Onboarding = ({ onNavigateToDashboard }) => {
                   <span>Belum punya akun? <strong onClick={() => setAuthModal({ isOpen: true, type: 'daftar' })} style={{ color: '#2563EB', cursor: 'pointer' }}>Daftar di sini</strong></span>
                 ) : (
                   <span>Sudah memiliki akun? <strong onClick={() => setAuthModal({ isOpen: true, type: 'masuk' })} style={{ color: '#2563EB', cursor: 'pointer' }}>Masuk di sini</strong></span>
-                )}
+                )
+              }
               </div>
             </form>
           </div>
@@ -253,25 +254,28 @@ const Onboarding = ({ onNavigateToDashboard }) => {
   );
 };
 
-// Objek Stylesheet Vertikal Rapi
+// Objek Stylesheet Vertikal Responsif Modern
 const styles = {
   container: {
     background: 'linear-gradient(180deg, #EBF3FF 0%, #F5F9FF 100%)',
     minHeight: '100vh',
     fontFamily: '"Inter", sans-serif',
     color: '#1E293B',
-    overflowX: 'hidden'
+    overflowX: 'hidden',
+    width: '100%'
   },
   navbar: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1.25rem 4rem',
+    padding: '1rem clamp(1rem, 4vw, 4rem)',
     backgroundColor: '#1E3A8A', 
     boxShadow: '0 4px 20px rgba(30, 58, 138, 0.15)',
     position: 'sticky',
     top: 0,
-    zIndex: 100
+    zIndex: 100,
+    flexWrap: 'wrap',
+    gap: '0.75rem'
   },
   logoContainer: {
     display: 'flex',
@@ -279,8 +283,8 @@ const styles = {
     gap: '0.75rem'
   },
   logoIcon: {
-    width: '40px',
-    height: '40px',
+    width: '38px',
+    height: '38px',
     backgroundColor: 'white', 
     color: '#1E3A8A',
     display: 'flex',
@@ -288,30 +292,30 @@ const styles = {
     alignItems: 'center',
     borderRadius: '12px',
     fontWeight: '900',
-    fontSize: '1.4rem'
+    fontSize: '1.3rem'
   },
   logoText: {
     margin: 0,
     fontWeight: '800',
-    fontSize: '1.2rem',
+    fontSize: '1.15rem',
     color: 'white'
   },
   logoSubtext: {
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     color: '#93C5FD',
     display: 'block',
     marginTop: '-2px'
   },
   menuLinks: {
     display: 'flex',
-    gap: '2.5rem',
+    gap: 'clamp(1rem, 2vw, 2.5rem)',
     fontWeight: '600',
-    fontSize: '0.95rem'
+    fontSize: '0.9rem'
   },
   menuItem: {
     cursor: 'pointer',
     position: 'relative',
-    paddingBottom: '0.5rem',
+    paddingBottom: '0.4rem',
     transition: '0.3s'
   },
   lineIndicator: {
@@ -325,124 +329,140 @@ const styles = {
   authNav: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem',
+    gap: '1rem',
     fontWeight: '600'
   },
   loginLink: {
     color: '#E0F2FE',
     cursor: 'pointer',
-    transition: '0.2s'
+    transition: '0.2s',
+    fontSize: '0.9rem'
   },
   registerButton: {
     backgroundColor: 'white',
     color: '#1E3A8A',
-    padding: '0.65rem 1.5rem',
+    padding: '0.5rem 1.2rem',
     border: 'none',
     borderRadius: '10px',
     cursor: 'pointer',
     fontWeight: '600',
+    fontSize: '0.9rem',
     boxShadow: '0 4px 10px rgba(255, 255, 255, 0.1)'
   },
   heroWrapper: {
-    padding: '4rem'
+    padding: 'clamp(1rem, 3vw, 4rem)',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   heroBox: {
     background: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)',
-    borderRadius: '36px',
-    padding: '6rem 5rem',
+    borderRadius: '28px',
+    padding: 'clamp(2rem, 5vw, 6rem) clamp(1.5rem, 4vw, 5rem)',
     display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     boxShadow: '0 30px 60px rgba(30, 58, 138, 0.25)', 
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    position: 'relative'
+    position: 'relative',
+    gap: '2rem',
+    boxSizing: 'border-box'
   },
   heroTitle: {
-    fontSize: '3.75rem',
+    fontSize: 'clamp(1.8rem, 5vw, 3.75rem)',
     fontWeight: '900',
     color: '#FFFFFF',
     margin: 0,
-    letterSpacing: '-1px'
+    letterSpacing: '-0.5px',
+    lineHeight: '1.2',
+    wordBreak: 'break-word'
   },
   heroSubtitle: {
-    fontSize: '1.35rem',
+    fontSize: 'clamp(0.95rem, 2vw, 1.35rem)',
     color: '#93C5FD',
-    marginTop: '1.5rem',
+    marginTop: '1.2rem',
     fontWeight: '500',
     lineHeight: '1.6'
   },
   heroButton: {
     backgroundColor: '#10B981', 
     color: 'white',
-    padding: '1rem 2.25rem',
+    padding: '0.85rem 1.8rem',
     border: 'none',
     borderRadius: '14px',
-    fontSize: '1.05rem',
+    fontSize: '1rem',
     fontWeight: '700',
-    marginTop: '2.5rem',
+    marginTop: '2rem',
     cursor: 'pointer',
     boxShadow: '0 10px 20px rgba(16, 185, 129, 0.3)',
     transition: 'all 0.3s ease'
   },
   heroIcon: {
-    fontSize: '9rem',
-    filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.3))' 
+    fontSize: 'clamp(4rem, 10vw, 8rem)',
+    filter: 'drop-shadow(0 15px 25px rgba(0,0,0,0.3))',
+    margin: '0 auto'
   },
   sectionFitur: {
-    padding: '7rem 4rem 6rem 4rem',
+    padding: 'clamp(3rem, 6vw, 7rem) clamp(1rem, 4vw, 4rem)',
     textAlign: 'center',
-    background: 'linear-gradient(180deg, #F4F8FF 0%, #E0ECFF 100%)'
+    background: 'linear-gradient(180deg, #F4F8FF 0%, #E0ECFF 100%)',
+    boxSizing: 'border-box'
   },
   sectionTitle: {
-    fontSize: '2.5rem',
+    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
     fontWeight: '800',
     color: '#0F172A',
     marginBottom: '1rem'
   },
   sectionSubtitle: {
     color: '#4B5563',
-    marginBottom: '4.5rem',
-    fontSize: '1.05rem',
+    marginBottom: '3rem',
+    fontSize: 'clamp(0.9rem, 2vw, 1.05rem)',
     fontWeight: '500'
   },
   gridFitur: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '2rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '1.5rem',
+    width: '100%',
+    boxSizing: 'border-box'
   },
   cardFitur: {
     backgroundColor: 'white',
-    padding: '3.5rem 2rem',
-    borderRadius: '28px',
+    padding: '2.5rem 1.5rem',
+    borderRadius: '24px',
     textAlign: 'left',
     boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
-    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+    boxSizing: 'border-box'
   },
   iconFiturBox: {
-    fontSize: '2.5rem',
-    width: '70px',
-    height: '70px',
-    borderRadius: '20px',
+    fontSize: '2rem',
+    width: '60px',
+    height: '60px',
+    borderRadius: '16px',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: '1.75rem'
+    marginBottom: '1.25rem'
   },
   cardFiturTitle: {
     margin: 0,
-    fontSize: '1.25rem',
+    fontSize: '1.15rem',
     fontWeight: '800',
     color: '#1E293B'
   },
   cardFiturDesc: {
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     color: '#64748B',
-    marginTop: '0.85rem',
-    lineHeight: '1.7'
+    marginTop: '0.75rem',
+    lineHeight: '1.6'
   },
   sectionTentang: {
-    padding: '8rem 4rem 10rem 4rem',
-    background: 'linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)'
+    padding: 'clamp(4rem, 8vw, 8rem) clamp(1rem, 4vw, 4rem)',
+    background: 'linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)',
+    boxSizing: 'border-box'
   },
   cardTentang: {
     maxWidth: '950px',
@@ -450,25 +470,26 @@ const styles = {
     textAlign: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.06)', 
     backdropFilter: 'blur(12px)',
-    padding: '5rem 4rem',
-    borderRadius: '40px',
+    padding: 'clamp(2rem, 5vw, 5rem) clamp(1.2rem, 4vw, 4rem)',
+    borderRadius: '32px',
     boxShadow: '0 30px 60px rgba(0,0,0,0.2)',
-    border: '1px solid rgba(255, 255, 255, 0.1)'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    boxSizing: 'border-box'
   },
   tentangIcon: {
-    fontSize: '3.5rem',
-    marginBottom: '1.5rem'
+    fontSize: '3rem',
+    marginBottom: '1rem'
   },
   sectionTentangTitle: {
-    fontSize: '2.5rem',
+    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
     fontWeight: '800',
     color: 'white',
-    marginBottom: '2rem'
+    marginBottom: '1.5rem'
   },
   tentangText: {
-    fontSize: '1.2rem',
+    fontSize: 'clamp(0.95rem, 2vw, 1.2rem)',
     color: '#E2E8F0',
-    lineHeight: '1.9',
+    lineHeight: '1.8',
     fontWeight: '500'
   },
   modalOverlay: {
@@ -482,17 +503,21 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 999
+    zIndex: 999,
+    padding: '1rem',
+    boxSizing: 'border-box'
   },
   modalBox: {
     backgroundColor: 'white',
-    padding: '2.75rem 2.5rem',
-    borderRadius: '32px',
-    width: '420px',
+    padding: '2rem 1.5rem',
+    borderRadius: '28px',
+    width: '100%',
+    maxWidth: '420px',
     boxShadow: '0 25px 50px rgba(0,0,0,0.1)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.5rem'
+    gap: '1.25rem',
+    boxSizing: 'border-box'
   },
   modalHeader: {
     display: 'flex',
@@ -501,52 +526,53 @@ const styles = {
   },
   modalTitle: {
     margin: 0,
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     fontWeight: '800',
     color: '#1E3A8A'
   },
   modalClose: {
     cursor: 'pointer',
-    fontSize: '1.3rem',
+    fontSize: '1.2rem',
     color: '#9CA3AF'
   },
   modalForm: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.25rem'
+    gap: '1rem'
   },
   inputWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.4rem'
+    gap: '0.35rem'
   },
   inputLabel: {
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '600',
     color: '#4B5563'
   },
   modalInput: {
     width: '100%',
-    padding: '0.85rem 1.1rem',
-    borderRadius: '14px',
+    padding: '0.8rem 1rem',
+    borderRadius: '12px',
     border: '1px solid #E5E7EB',
     backgroundColor: '#F9FAFB',
-    fontSize: '0.95rem'
+    fontSize: '0.9rem',
+    boxSizing: 'border-box'
   },
   modalButton: {
     width: '100%',
     backgroundColor: '#2563EB',
     color: 'white',
-    padding: '1rem',
+    padding: '0.85rem',
     border: 'none',
-    borderRadius: '14px',
+    borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     cursor: 'pointer'
   },
   modalSwitchText: {
     textAlign: 'center',
-    fontSize: '0.875rem'
+    fontSize: '0.85rem'
   }
 };
 
