@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react';
 
 const Calendar = ({ onNavigateToDashboard }) => {
-  // Mengambil data tasks yang diinput dari dashboard secara real-time
-  const [tasks, setTasks] = useState(() => JSON.parse(localStorage.getItem('tasks')) || []);
+  const [tasks, setTasks] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date(2026, 6, 15)); // Fokus Juli 2026 sesuai database harianmu
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // ENDPOINT API MOCKAPI DISESUAIKAN DENGAN DASHBOARD
+  const TASKS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/events';
+
+  // FUNGSI MENGAMBIL DATA DARI MOCKAPI ONLINE
+  const fetchTasksFromApi = async () => {
+    try {
+      const res = await fetch(TASKS_API_URL);
+      if (res.ok) {
+        const data = await res.json();
+        setTasks(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data kalender dari MockAPI:", error);
+    }
+  };
+
   useEffect(() => {
     setIsLoaded(true);
-    // Sync data kembali jika ada perubahan eksternal
-    const handleStorageChange = () => {
-      setTasks(JSON.parse(localStorage.getItem('tasks')) || []);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    fetchTasksFromApi();
   }, []);
 
   const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
@@ -41,8 +51,8 @@ const Calendar = ({ onNavigateToDashboard }) => {
     const targetDateStr = `${year}-${formattedMonth}-${formattedDay}`;
 
     return tasks.filter(task => {
-      if (!task.time) return false;
-      return task.time.substring(0, 10) === targetDateStr;
+      const taskDate = task.date || (task.time ? task.time.substring(0, 10) : '');
+      return taskDate === targetDateStr;
     });
   };
 
@@ -93,18 +103,24 @@ const Calendar = ({ onNavigateToDashboard }) => {
             {day} {isToday && <span style={styles.todayIndicator}>Hari Ini</span>}
           </div>
 
-          {/* MENAMPILKAN DAFTAR UTUH NAMA AGENDA YANG KAMU INPUT */}
+          {/* MENAMPILKAN DAFTAR UTUH NAMA AGENDA YANG KAMU INPUT DARI MOCKAPI */}
           <div style={styles.cellTaskContainer}>
-            {dayTasks.map(task => (
-              <div 
-                key={task.id} 
-                style={{ ...styles.taskMiniBadge, ...getBadgeStyle(task.category) }}
-                title={`${task.title} (${task.category})`}
-              >
-                <div style={styles.taskMiniTitle}>{task.title}</div>
-                <div style={styles.taskMiniTime}>{task.time.substring(task.time.indexOf('('))}</div>
-              </div>
-            ))}
+            {dayTasks.map(task => {
+              const timeDisplay = task.time && task.time.includes('(') 
+                ? task.time.substring(task.time.indexOf('(')) 
+                : (task.startTime ? `(${task.startTime} - ${task.endTime})` : '');
+
+              return (
+                <div 
+                  key={task.id} 
+                  style={{ ...styles.taskMiniBadge, ...getBadgeStyle(task.category) }}
+                  title={`${task.title} (${task.category})`}
+                >
+                  <div style={styles.taskMiniTitle}>{task.title}</div>
+                  <div style={styles.taskMiniTime}>{timeDisplay}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       );
@@ -407,7 +423,6 @@ const styles = {
     flexGrow: 1,
     overflowY: 'auto'
   },
-  // DESIGN BADGE BARU: MENAMPILKAN BALOK TEKS AGENDA SECARA UTUH DAN MEWAH
   taskMiniBadge: {
     padding: '0.35rem 0.6rem',
     borderRadius: '8px',

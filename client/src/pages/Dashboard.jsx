@@ -38,47 +38,44 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   // State navigasi sub-halaman dinamis
   const [currentSubPage, setCurrentSubPage] = useState('Utama'); 
 
-  const API_URL = 'http://localhost:3000';
+  // ENDPOINT API ONLINE MOCKAPI
+  const TASKS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/events';
+  const USERS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/users';
 
   // Efek untuk memperbarui jam & tanggal ke waktu paling baru TEPAT saat modal dibuka
   useEffect(() => {
     if (isModalOpen) {
       setDate(getTanggalHariIni());
-      setStartTime(getWaktuSekarang(0));  // Jam sekarang saat ini (misal: 14:36)
-      setEndTime(getWaktuSekarang(2));    // Jam sekarang + 2 jam otomatis (misal: 16:36)
+      setStartTime(getWaktuSekarang(0));
+      setEndTime(getWaktuSekarang(2));
     }
   }, [isModalOpen]);
 
-  // 1. AMBIL DATA DARI JSON SERVER (DENGAN PROTEKSI COLD-START BIAR TIDAK LAYAR PUTIH)
+  // 1. AMBIL DATA DARI MOCKAPI ONLINE
   const fetchTasksAndUser = async () => {
     try {
-      // Ambil data tugas harian dari server
-      const tasksRes = await fetch(`${API_URL}/tasks`);
+      // Ambil data tugas harian dari server MockAPI
+      const tasksRes = await fetch(TASKS_API_URL);
       if (tasksRes.ok) {
         const tasksData = await tasksRes.json();
         setTasks(Array.isArray(tasksData) ? tasksData : []);
       }
 
-      // Ambil data user aktif dengan proteksi structural check
-      const userRes = await fetch(`${API_URL}/currentUser`);
-      if (userRes.ok) {
-        const userData = await userRes.json();
-        
-        // Cek apakah data user valid, jika tidak ambil dari backup lokal localStorage
-        if (userData && userData.name) {
-          setUserName(userData.name);
-        } else {
-          const localUser = JSON.parse(localStorage.getItem('currentUser'));
-          if (localUser && localUser.name) {
-            setUserName(localUser.name);
-          } else {
-            setUserName('Tia');
+      // Ambil data user aktif dari LocalStorage atau MockAPI
+      const localUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (localUser && localUser.name) {
+        setUserName(localUser.name);
+      } else {
+        const userRes = await fetch(USERS_API_URL);
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          if (Array.isArray(userData) && userData.length > 0) {
+            setUserName(userData[0].name || 'Tia');
           }
         }
       }
     } catch (error) {
-      console.error("Gagal mengambil data dari JSON Server:", error);
-      // Fallback cadangan darurat jika server lokal mati mendadak
+      console.error("Gagal mengambil data dari MockAPI:", error);
       const localUser = JSON.parse(localStorage.getItem('currentUser'));
       if (localUser && localUser.name) setUserName(localUser.name);
     }
@@ -97,7 +94,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   };
 
-  // 2. TAMBAH DATA KE JSON SERVER (CREATE)
+  // 2. TAMBAH DATA KE MOCKAPI (CREATE)
   const handleCreateAgenda = async (e) => {
     e.preventDefault();
     if (!title.trim()) return alert("Judul agenda tidak boleh kosong!");
@@ -128,11 +125,14 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     const newAgenda = {
       title,
       category,
-      time: `${date} (${startTime} - ${endTime})`
+      time: `${date} (${startTime} - ${endTime})`,
+      date,
+      startTime,
+      endTime
     };
 
     try {
-      const res = await fetch(`${API_URL}/tasks`, {
+      const res = await fetch(TASKS_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAgenda)
@@ -140,20 +140,20 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
       if (res.ok) {
         setTitle(''); 
         setIsModalOpen(false);
-        alert("✨ Agenda baru berhasil ditambahkan ke Server!");
+        alert("✨ Agenda baru berhasil ditambahkan ke Server Online!");
         fetchTasksAndUser(); 
       }
     } catch (error) {
-      alert("Gagal menyimpan ke JSON Server");
+      alert("Gagal menyimpan ke Database Online");
     }
   };
 
-  // 3. EDIT DATA DI JSON SERVER (UPDATE)
+  // 3. EDIT DATA DI MOCKAPI (UPDATE)
   const handleUpdateTask = async (id, currentTask) => {
     if (!editTitle.trim()) return alert("Judul tidak boleh kosong!");
     
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, {
+      const res = await fetch(`${TASKS_API_URL}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -164,7 +164,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
       });
       if (res.ok) {
         setEditingTaskId(null);
-        alert("✨ Agenda berhasil diperbarui di Server!");
+        alert("✨ Agenda berhasil diperbarui!");
         fetchTasksAndUser();
       }
     } catch (error) {
@@ -172,7 +172,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 4. MENGUBAH STATUS SELESAI DI JSON SERVER (UPDATE)
+  // 4. MENGUBAH STATUS SELESAI DI MOCKAPI (UPDATE)
   const handleToggleComplete = async (task) => {
     let updatedCategory = task.category;
     let updatedOriginalCategory = task.originalCategory || task.category;
@@ -184,7 +184,7 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
 
     try {
-      await fetch(`${API_URL}/tasks/${task.id}`, {
+      await fetch(`${TASKS_API_URL}/${task.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,13 +199,13 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 5. HAPUS DATA DARI JSON SERVER (DELETE)
+  // 5. HAPUS DATA DARI MOCKAPI (DELETE)
   const handleDeleteTask = async (id) => {
     if (window.confirm("Hapus agenda ini secara permanen dari server?")) {
       try {
-        const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${TASKS_API_URL}/${id}`, { method: 'DELETE' });
         if (res.ok) {
-          alert("Agenda berhasil deleted dari Server!");
+          alert("Agenda berhasil dihapus dari Server!");
           fetchTasksAndUser();
         }
       } catch (error) {
@@ -354,8 +354,8 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
                       </td>
                     </tr>
                   ) : subPageTasks.map((task) => {
-                    const rawDate = task.time.substring(0, 10);
-                    const timeRange = task.time.substring(task.time.indexOf('('));
+                    const rawDate = task.time ? task.time.substring(0, 10) : (task.date || '');
+                    const timeRange = task.time && task.time.includes('(') ? task.time.substring(task.time.indexOf('(')) : `(${task.startTime || ''} - ${task.endTime || ''})`;
                     const formattedIndoDate = `${formatDateToIndo(rawDate)} ${timeRange}`;
 
                     return (
