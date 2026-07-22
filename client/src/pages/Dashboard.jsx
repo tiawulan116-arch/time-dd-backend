@@ -5,7 +5,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   const [selectedFilter, setSelectedFilter] = useState('Semua');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fungsi pembantu untuk mendapatkan format waktu (HH:MM) lokal saat ini
   const getWaktuSekarang = (tambahJam = 0) => {
     const sekarang = new Date();
     const jam = String(sekarang.getHours() + tambahJam).padStart(2, '0');
@@ -13,7 +12,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     return `${jam}:${menit}`;
   };
 
-  // Fungsi pembantu untuk mendapatkan format tanggal (YYYY-MM-DD) lokal saat ini
   const getTanggalHariIni = () => {
     const sekarang = new Date();
     const tahun = sekarang.getFullYear();
@@ -22,7 +20,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     return `${tahun}-${bulan}-${tanggal}`;
   };
 
-  // State Form dengan nilai awal dinamis
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Kuliah');
   const [date, setDate] = useState(getTanggalHariIni());
@@ -34,20 +31,8 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   const [editCategory, setEditCategory] = useState('Kuliah');
   const [isLoaded, setIsLoaded] = useState(false);
   const [userName, setUserName] = useState('Tia');
-
-  // State navigasi sub-halaman dinamis
   const [currentSubPage, setCurrentSubPage] = useState('Utama'); 
 
-  // Detect ukuran layar untuk responsif dinamis
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // ENDPOINT API ONLINE MOCKAPI
   const TASKS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/events';
   const USERS_API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/users';
 
@@ -59,7 +44,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   }, [isModalOpen]);
 
-  // 1. AMBIL DATA DARI MOCKAPI ONLINE
   const fetchTasksAndUser = async () => {
     try {
       const tasksRes = await fetch(TASKS_API_URL);
@@ -100,7 +84,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   };
 
-  // 2. TAMBAH DATA KE MOCKAPI (CREATE)
   const handleCreateAgenda = async (e) => {
     e.preventDefault();
     if (!title.trim()) return alert("Judul agenda tidak boleh kosong!");
@@ -154,7 +137,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 3. EDIT DATA
   const handleUpdateTask = async (id, currentTask) => {
     if (!editTitle.trim()) return alert("Judul tidak boleh kosong!");
     
@@ -178,7 +160,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 4. TOGGLE COMPLETE
   const handleToggleComplete = async (task) => {
     let updatedCategory = task.category === 'Selesai' ? (task.originalCategory || 'Kuliah') : 'Selesai';
     let updatedOriginalCategory = task.originalCategory || task.category;
@@ -199,7 +180,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
     }
   };
 
-  // 5. DELETE
   const handleDeleteTask = async (id) => {
     if (window.confirm("Hapus agenda ini secara permanen dari server?")) {
       try {
@@ -238,17 +218,33 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   });
 
   return (
-    <div style={{
-      ...styles.dashboardLayout,
-      flexDirection: isMobile ? 'column' : 'row'
-    }}>
+    <div className="dashboard-layout" style={styles.dashboardLayout}>
+      {/* CSS MEDIA QUERY UNTUK RESPONTIF HP */}
+      <style>{`
+        @media (max-width: 768px) {
+          .dashboard-layout {
+            flex-direction: column !important;
+          }
+          .dashboard-sidebar {
+            width: 100% !important;
+            padding: 1.25rem !important;
+          }
+          .dashboard-nav {
+            flex-direction: row !important;
+            justify-content: space-around !important;
+          }
+          .dashboard-main {
+            width: 100% !important;
+            padding: 1rem !important;
+          }
+          .hide-mobile {
+            display: none !important;
+          }
+        }
+      `}</style>
       
-      {/* SIDEBAR LEFT / TOP (HP) */}
-      <aside style={{
-        ...styles.sidebar,
-        width: isMobile ? '100%' : '280px',
-        padding: isMobile ? '1.2rem' : '2.5rem 1.5rem'
-      }}>
+      {/* SIDEBAR LEFT */}
+      <aside className="dashboard-sidebar" style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
           <div style={styles.sidebarLogoIcon}>T</div>
           <div>
@@ -257,44 +253,29 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
           </div>
         </div>
         
-        <nav style={{
-          ...styles.sidebarNav,
-          flexDirection: isMobile ? 'row' : 'column',
-          justifyContent: isMobile ? 'space-between' : 'flex-start'
-        }}>
+        <nav className="dashboard-nav" style={styles.sidebarNav}>
           <div onClick={() => { setSelectedFilter('Semua'); setCurrentSubPage('Utama'); }} style={{ ...styles.sidebarMenu, backgroundColor: currentSubPage === 'Utama' ? 'rgba(255,255,255,0.15)' : 'transparent', color: '#FFFFFF' }}>
             📊 Ringkasan
           </div>
           <div onClick={onNavigateToCalendar} style={styles.sidebarMenu}>📅 Kalender</div>
-          {isMobile && (
-            <div onClick={onNavigateToOnboarding} style={{ ...styles.sidebarMenu, color: '#EF4444' }}>
-              🚪 Keluar
-            </div>
-          )}
+          <div onClick={onNavigateToOnboarding} style={{ ...styles.sidebarMenu, color: '#FCA5A5' }}>
+            🚪 Keluar
+          </div>
         </nav>
 
-        {!isMobile && (
-          <div style={styles.sidebarFooter}>
-            <button onClick={onNavigateToOnboarding} style={styles.btnLogout}>
-              🚪 Keluar Aplikasi
-            </button>
-            <div style={styles.sidebarVersion}>v1.0.0 © 2026</div>
-          </div>
-        )}
+        <div className="hide-mobile" style={styles.sidebarFooter}>
+          <div style={styles.sidebarVersion}>v1.0.0 © 2026</div>
+        </div>
       </aside>
 
       {/* MAIN KONTEN */}
-      <main style={{
-        ...styles.mainContent,
-        width: isMobile ? '100%' : 'calc(100% - 280px)',
-        padding: isMobile ? '1rem' : '2.5rem'
-      }}>
+      <main className="dashboard-main" style={styles.mainContent}>
         
         {/* USER WELCOME BANNER CARD */}
         <header style={styles.mainHeaderCard}>
           <div>
             <h1 style={styles.headerTitle}>Halo, {userName.split(' ')[0].toLowerCase()} 👋</h1>
-            <p style={styles.headerSubtitle}>Klik salah satu kartu ringkasan di bawah ini untuk melihat detailnya.</p>
+            <p style={styles.headerSubtitle}>Klik salah satu kartu ringkasan di bawah ini untuk melihat rincian datanya.</p>
           </div>
           <div style={styles.headerBtnGroup}>
             <button onClick={() => setIsModalOpen(true)} style={styles.btnCreate}>➕ Tambah Agenda</button>
@@ -489,10 +470,10 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   );
 };
 
-// CSS Stylesheet Otomatis Menyesuaikan Layar (Laptop & HP Fleksibel)
 const styles = {
   dashboardLayout: {
     display: 'flex',
+    flexDirection: 'row',
     background: 'linear-gradient(135deg, #EBF3FF 0%, #F5F9FF 100%)',
     minHeight: '100vh',
     fontFamily: '"Inter", sans-serif',
@@ -500,12 +481,14 @@ const styles = {
     boxSizing: 'border-box'
   },
   sidebar: {
+    width: '280px',
     backgroundColor: '#1E3A8A',
     color: 'white',
+    padding: '2.5rem 1.5rem',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.2rem',
-    boxShadow: '0 4px 20px rgba(30, 58, 138, 0.1)',
+    gap: '2rem',
+    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)',
     flexShrink: 0,
     boxSizing: 'border-box'
   },
@@ -524,28 +507,29 @@ const styles = {
     alignItems: 'center',
     borderRadius: '10px',
     fontWeight: '900',
-    fontSize: '1.2rem'
+    fontSize: '1.25rem'
   },
   sidebarLogo: {
-    fontSize: '1.25rem',
+    fontSize: '1.35rem',
     fontWeight: '800',
     margin: 0
   },
   sidebarSublogo: {
-    fontSize: '0.7rem',
+    fontSize: '0.75rem',
     color: '#93C5FD',
     display: 'block'
   },
   sidebarNav: {
     display: 'flex',
-    gap: '0.5rem',
+    flexDirection: 'column',
+    gap: '0.6rem',
     flexGrow: 1
   },
   sidebarMenu: {
-    padding: '0.6rem 0.9rem',
-    borderRadius: '10px',
+    padding: '0.85rem 1.25rem',
+    borderRadius: '12px',
     fontWeight: '600',
-    fontSize: '0.85rem',
+    fontSize: '0.95rem',
     cursor: 'pointer',
     color: '#93C5FD'
   },
@@ -554,23 +538,15 @@ const styles = {
     flexDirection: 'column',
     gap: '1rem'
   },
-  btnLogout: {
-    backgroundColor: '#EF4444',
-    color: 'white',
-    border: 'none',
-    padding: '0.75rem',
-    borderRadius: '10px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    fontSize: '0.85rem'
-  },
   sidebarVersion: {
-    fontSize: '0.75rem',
+    fontSize: '0.8rem',
     opacity: 0.4,
     textAlign: 'center'
   },
   mainContent: {
     flexGrow: 1,
+    padding: '2.5rem',
+    width: 'calc(100% - 280px)',
     boxSizing: 'border-box'
   },
   mainHeaderCard: {
@@ -579,87 +555,87 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: '1.25rem',
-    borderRadius: '20px',
+    padding: '1.5rem',
+    borderRadius: '24px',
     boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid rgba(226, 232, 240, 0.8)',
-    marginBottom: '1.5rem',
+    marginBottom: '2rem',
     gap: '1rem'
   },
   headerTitle: {
-    fontSize: 'clamp(1.3rem, 3vw, 2rem)',
+    fontSize: 'clamp(1.4rem, 3vw, 2.25rem)',
     fontWeight: '900',
     color: '#1E3A8A',
     margin: 0
   },
   headerSubtitle: {
     color: '#64748B',
-    marginTop: '0.3rem',
-    fontSize: '0.85rem'
+    marginTop: '0.5rem',
+    fontSize: '0.9rem'
   },
   headerBtnGroup: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.75rem',
     flexWrap: 'wrap'
   },
   btnCreate: {
     backgroundColor: '#10B981',
     color: 'white',
-    padding: '0.65rem 1rem',
+    padding: '0.75rem 1.25rem',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontWeight: '700',
     cursor: 'pointer',
-    fontSize: '0.85rem'
+    fontSize: '0.9rem'
   },
   btnCalendar: {
     backgroundColor: '#4F46E5',
     color: 'white',
-    padding: '0.65rem 1rem',
+    padding: '0.75rem 1.25rem',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontWeight: '700',
     cursor: 'pointer',
-    fontSize: '0.85rem'
+    fontSize: '0.9rem'
   },
   statsWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem',
-    marginBottom: '1.5rem'
+    gap: '1.25rem',
+    marginBottom: '2rem'
   },
   gridStatus: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: '1rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1.25rem'
   },
   gridCategory: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-    gap: '1rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: '1.25rem'
   },
   cardStat: {
-    padding: '1.2rem 1rem',
-    borderRadius: '18px',
+    padding: '1.5rem 1.25rem',
+    borderRadius: '24px',
     cursor: 'pointer',
     boxSizing: 'border-box'
   },
   cardStatLabelDark: {
     color: '#374151',
-    fontSize: '0.8rem',
+    fontSize: '0.9rem',
     fontWeight: '800'
   },
   cardStatNumDark: {
-    fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
+    fontSize: 'clamp(2rem, 4vw, 3.25rem)',
     fontWeight: '900',
-    margin: '0.2rem 0 0 0',
+    margin: '0.4rem 0 0 0',
     color: '#111827'
   },
   subPageWrapperCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '20px',
-    padding: '1.25rem',
-    boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
+    borderRadius: '24px',
+    padding: '1.5rem',
+    boxShadow: '0 15px 35px rgba(30, 58, 138, 0.06)',
     border: '1px solid #E2E8F0',
     marginBottom: '1rem'
   },
@@ -668,79 +644,79 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid #F1F5F9',
-    paddingBottom: '0.75rem'
+    paddingBottom: '1rem'
   },
   subPagePreTitle: {
-    fontSize: '0.65rem',
+    fontSize: '0.7rem',
     color: '#3B82F6',
     fontWeight: '800'
   },
   subPageMainTitle: {
-    margin: 0,
-    fontSize: '1.1rem',
+    margin: '0.25rem 0 0 0',
+    fontSize: '1.25rem',
     fontWeight: '900'
   },
   btnBackToMainDashboard: {
     backgroundColor: '#1E293B',
     color: 'white',
     border: 'none',
-    padding: '0.5rem 0.8rem',
-    borderRadius: '8px',
-    fontSize: '0.75rem',
+    padding: '0.6rem 1.1rem',
+    borderRadius: '10px',
+    fontSize: '0.8rem',
     fontWeight: '700',
     cursor: 'pointer'
   },
   chartSection: {
     backgroundColor: 'white',
-    padding: '1.25rem',
-    borderRadius: '20px',
-    boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
+    padding: '1.5rem',
+    borderRadius: '24px',
+    boxShadow: '0 12px 40px rgba(30, 58, 138, 0.04)',
     border: '1px solid #E2E8F0',
-    marginTop: '1rem'
+    marginTop: '1.5rem'
   },
   chartHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem'
+    marginBottom: '1.5rem'
   },
   chartTitle: {
-    fontSize: '1rem',
+    fontSize: '1.1rem',
     fontWeight: '800',
     margin: 0
   },
   chartBadge: {
     backgroundColor: '#EEF2F6',
     color: '#475569',
-    padding: '0.2rem 0.5rem',
-    borderRadius: '6px',
-    fontSize: '0.7rem'
+    padding: '0.3rem 0.75rem',
+    borderRadius: '8px',
+    fontSize: '0.75rem'
   },
   chartProgressWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem'
+    gap: '1.25rem'
   },
   progressItem: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.3rem'
+    gap: '0.5rem'
   },
   progressLabelRow: {
     display: 'flex',
     justifyContent: 'space-between'
   },
   progressName: {
-    fontSize: '0.8rem',
+    fontSize: '0.85rem',
     fontWeight: '700'
   },
   progressVal: {
-    fontSize: '0.8rem',
+    fontSize: '0.85rem',
     fontWeight: '800'
   },
   progressBarBg: {
     width: '100%',
-    height: '8px',
+    height: '10px',
     backgroundColor: '#F1F5F9',
     borderRadius: '999px',
     overflow: 'hidden'
@@ -748,20 +724,21 @@ const styles = {
   progressBarFill: {
     height: '100%',
     borderRadius: '999px',
-    transition: 'width 0.8s ease'
+    transition: 'width 1s ease'
   },
   dataTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    textAlign: 'left'
+    textAlign: 'left',
+    minWidth: '500px'
   },
   tableHeaderRow: {
     borderBottom: '2px solid #E2E8F0',
     backgroundColor: '#F8FAFC'
   },
   thStyles: {
-    padding: '0.65rem',
-    fontSize: '0.75rem',
+    padding: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '800',
     color: '#475569'
   },
@@ -769,67 +746,67 @@ const styles = {
     borderBottom: '1px solid #F1F5F9'
   },
   tdStyles: {
-    padding: '0.75rem 0.65rem',
+    padding: '1rem 0.85rem',
     verticalAlign: 'middle',
-    fontSize: '0.8rem'
+    fontSize: '0.85rem'
   },
   taskCheckbox: {
-    transform: 'scale(1.1)',
+    transform: 'scale(1.2)',
     cursor: 'pointer'
   },
   taskTextSpan: {
     fontWeight: '700'
   },
   tableTimeSpan: {
-    fontSize: '0.75rem',
+    fontSize: '0.8rem',
     color: '#64748B'
   },
   badgeCategory: {
-    padding: '0.2rem 0.6rem',
-    borderRadius: '999px',
-    fontSize: '0.65rem',
+    padding: '0.3rem 0.85rem',
+    borderRadius: '9999px',
+    fontSize: '0.7rem',
     fontWeight: '800'
   },
   actionBtnGroup: {
     display: 'flex',
-    gap: '0.3rem'
+    gap: '0.4rem'
   },
   btnActionEditComponent: {
     backgroundColor: '#3B82F6',
     color: 'white',
     border: 'none',
-    padding: '0.35rem 0.6rem',
-    borderRadius: '6px',
-    fontSize: '0.75rem',
+    padding: '0.45rem 0.85rem',
+    borderRadius: '8px',
+    fontSize: '0.8rem',
     cursor: 'pointer'
   },
   btnActionDeleteComponent: {
     backgroundColor: '#EF4444',
     color: 'white',
     border: 'none',
-    padding: '0.35rem 0.6rem',
-    borderRadius: '6px',
-    fontSize: '0.75rem',
+    padding: '0.45rem 0.85rem',
+    borderRadius: '8px',
+    fontSize: '0.8rem',
     cursor: 'pointer'
   },
   tableInputText: {
-    padding: '0.3rem',
-    borderRadius: '4px',
+    padding: '0.4rem',
+    borderRadius: '6px',
     border: '1px solid #3B82F6',
-    width: '100%'
+    width: '90%'
   },
   tableSelect: {
-    padding: '0.3rem',
-    borderRadius: '4px',
+    padding: '0.4rem',
+    borderRadius: '6px',
     border: '1px solid #3B82F6'
   },
   btnSaveInline: {
     backgroundColor: '#10B981',
     color: 'white',
     border: 'none',
-    padding: '0.35rem 0.6rem',
-    borderRadius: '6px',
-    fontSize: '0.75rem',
+    padding: '0.45rem 0.9rem',
+    borderRadius: '8px',
+    fontSize: '0.8rem',
     cursor: 'pointer'
   },
   modalOverlay: {
@@ -839,7 +816,7 @@ const styles = {
     width: '100vw',
     height: '100vh',
     backgroundColor: 'rgba(15, 23, 42, 0.4)',
-    backdropFilter: 'blur(6px)',
+    backdropFilter: 'blur(8px)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -849,10 +826,10 @@ const styles = {
   },
   modalContentBox: {
     backgroundColor: 'white',
-    padding: '1.5rem',
-    borderRadius: '20px',
+    padding: '1.75rem',
+    borderRadius: '24px',
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '450px',
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
@@ -860,58 +837,58 @@ const styles = {
   },
   modalContentTitle: {
     margin: 0,
-    fontSize: '1.1rem',
+    fontSize: '1.2rem',
     fontWeight: '800'
   },
   modalFormWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.85rem'
+    gap: '1rem'
   },
   modalInputItem: {
     width: '100%',
-    padding: '0.75rem',
-    borderRadius: '10px',
+    padding: '0.8rem 1rem',
+    borderRadius: '12px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.85rem',
+    fontSize: '0.9rem',
     boxSizing: 'border-box'
   },
   modalTimeFlex: {
     display: 'flex',
-    gap: '0.5rem'
+    gap: '0.75rem'
   },
   modalInputTime: {
     flex: 1,
-    padding: '0.75rem',
-    borderRadius: '10px',
+    padding: '0.8rem 1rem',
+    borderRadius: '12px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.85rem',
+    fontSize: '0.9rem',
     boxSizing: 'border-box'
   },
   modalBtnGroup: {
     display: 'flex',
-    gap: '0.5rem'
+    gap: '0.75rem'
   },
   modalBtnSubmit: {
     flex: 2,
     backgroundColor: '#2563EB',
     color: 'white',
-    padding: '0.75rem',
+    padding: '0.8rem',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '0.85rem',
+    fontSize: '0.95rem',
     cursor: 'pointer'
   },
   modalBtnCancel: {
     flex: 1,
     backgroundColor: '#F1F5F9',
     color: '#475569',
-    padding: '0.75rem',
+    padding: '0.8rem',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '0.85rem',
+    fontSize: '0.95rem',
     cursor: 'pointer'
   }
 };
