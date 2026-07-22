@@ -9,7 +9,8 @@ const Onboarding = ({ onNavigateToDashboard }) => {
   const [name, setName] = useState('');
   const [activeMenu, setActiveMenu] = useState('beranda');
 
-  const API_URL = 'http://localhost:3000';
+  // API URL DISESUAIKAN KE MOCKAPI ONLINE
+  const API_URL = 'https://6a60fe94da10c59c180952e3.mockapi.io/users';
 
   useEffect(() => {
     AOS.init({ 
@@ -36,7 +37,7 @@ const Onboarding = ({ onNavigateToDashboard }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // INTEGRASI API UTAMA KE JSON SERVER
+  // INTEGRASI API UTAMA KE MOCKAPI
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return alert("Silakan isi semua kolom data!");
@@ -45,70 +46,58 @@ const Onboarding = ({ onNavigateToDashboard }) => {
     const targetPassword = password.trim();
 
     try {
-      // 1. Ambil list database users dari JSON Server
-      const resUsers = await fetch(`${API_URL}/users`);
+      // 1. Ambil list database users dari MockAPI
+      const resUsers = await fetch(API_URL);
       let savedUsers = [];
       if (resUsers.ok) {
         savedUsers = await resUsers.json();
       }
 
       if (authModal.type === 'daftar') {
-        // Cek apakah email sudah terdaftar di database server
-        const isExist = savedUsers.some(user => user.email.toLowerCase() === targetEmail);
+        // Cek apakah email sudah terdaftar di MockAPI
+        const isExist = savedUsers.some(user => user.email && user.email.toLowerCase() === targetEmail);
         if (isExist) {
-          return alert("⚠️ Pendaftaran Gagal! Email ini sudah terdaftar di server.");
+          return alert("⚠️ Pendaftaran Gagal! Email ini sudah terdaftar.");
         }
 
         const newUser = { 
-          id: Date.now().toString(),
           name: name.trim(), 
           email: targetEmail, 
           password: targetPassword 
         };
 
-        // POST data user baru ke endpoint /users di JSON Server
-        const regRes = await fetch(`${API_URL}/users`, {
+        // POST data user baru ke MockAPI
+        const regRes = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newUser)
         });
 
         if (regRes.ok) {
-          alert("✨ Pendaftaran Berhasil! Data tersimpan di JSON Server. Silakan masuk menggunakan akun baru kamu.");
+          alert("✨ Pendaftaran Berhasil! Data tersimpan online. Silakan masuk menggunakan akun baru kamu.");
           setAuthModal({ isOpen: true, type: 'masuk' });
           setName(''); setEmail(''); setPassword('');
         }
       } else {
-        // Logika mencocokkan akun dari JSON Server
+        // Logika mencocokkan akun dari MockAPI
         const matchedUser = savedUsers.find(
-          (user) => user.email.toLowerCase() === targetEmail && user.password === targetPassword
+          (user) => user.email && user.email.toLowerCase() === targetEmail && user.password === targetPassword
         );
 
         if (matchedUser) {
-          // PUT/Update data user aktif yang sedang login ke endpoint /currentUser
-          await fetch(`${API_URL}/currentUser`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: "1",
-              name: matchedUser.name,
-              email: matchedUser.email
-            })
-          });
-
-          // Backup cadangan lokal untuk state sinkronisasi awal
+          // Simpan data user aktif ke LocalStorage untuk sesi login
           localStorage.setItem('currentUser', JSON.stringify(matchedUser));
           
           setAuthModal({ isOpen: false, type: 'masuk' });
           setEmail(''); setPassword('');
           onNavigateToDashboard();
         } else {
-          alert("❌ Akses Ditolak! Akun belum terdaftar atau password salah pada sistem database.");
+          alert("❌ Akses Ditolak! Akun belum terdaftar atau password salah.");
         }
       }
     } catch (error) {
-      console.error("Kesalahan koneksi API JSON Server:", error);
-      alert("❌ Gagal terhubung ke JSON Server! Pastikan server lokal Anda sudah berjalan.");
+      console.error("Kesalahan koneksi API:", error);
+      alert("❌ Gagal terhubung ke Database Online! Periksa koneksi internet Anda.");
     }
   };
 
@@ -220,7 +209,7 @@ const Onboarding = ({ onNavigateToDashboard }) => {
           <div style={styles.tentangIcon} data-aos="zoom-in" data-aos-delay="200">💡</div>
           <h2 style={styles.sectionTentangTitle}>Tentang Aplikasi TimeDD</h2>
           <p style={styles.tentangText}>
-            <strong>TimeDD</strong>adalah solusi manajemen waktu yang dirancang khusus untuk membantu mahasiswa Double Degree maupun mahasiswa yang bekerja sambil kuliah. Melalui pengelolaan jadwal yang terintegrasi, aplikasi ini membantu menyeimbangkan jadwal perkuliahan, penyelesaian tugas, dan jam kerja sehingga setiap aktivitas dapat berjalan lebih efektif, terorganisir, dan tanpa bentrokan jadwal.
+            <strong>TimeDD</strong> adalah solusi manajemen waktu yang dirancang khusus untuk membantu mahasiswa Double Degree maupun mahasiswa yang bekerja sambil kuliah. Melalui pengelolaan jadwal yang terintegrasi, aplikasi ini membantu menyeimbangkan jadwal perkuliahan, penyelesaian tugas, dan jam kerja sehingga setiap aktivitas dapat berjalan lebih efektif, terorganisir, dan tanpa bentrokan jadwal.
           </p>
         </div>
       </section>
