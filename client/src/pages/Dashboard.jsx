@@ -219,7 +219,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
 
   return (
     <div className="dashboard-layout" style={styles.dashboardLayout}>
-      {/* CSS MEDIA QUERY UNTUK RESPONTIF HP */}
       <style>{`
         @media (max-width: 768px) {
           .dashboard-layout {
@@ -237,9 +236,6 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
             width: 100% !important;
             padding: 1rem !important;
           }
-          .hide-mobile {
-            display: none !important;
-          }
         }
       `}</style>
       
@@ -255,15 +251,16 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
         
         <nav className="dashboard-nav" style={styles.sidebarNav}>
           <div onClick={() => { setSelectedFilter('Semua'); setCurrentSubPage('Utama'); }} style={{ ...styles.sidebarMenu, backgroundColor: currentSubPage === 'Utama' ? 'rgba(255,255,255,0.15)' : 'transparent', color: '#FFFFFF' }}>
-            📊 Ringkasan
+            📊 Ringkasan Panel
           </div>
-          <div onClick={onNavigateToCalendar} style={styles.sidebarMenu}>📅 Kalender</div>
-          <div onClick={onNavigateToOnboarding} style={{ ...styles.sidebarMenu, color: '#FCA5A5' }}>
-            🚪 Keluar
-          </div>
+          <div onClick={onNavigateToCalendar} style={styles.sidebarMenu}>📅 Kalender Jadwal</div>
         </nav>
 
-        <div className="hide-mobile" style={styles.sidebarFooter}>
+        {/* TOMBOL KELUAR DIPOSISIKAN KEMBALI DI BAGIAN BAWAH SIDEBAR */}
+        <div style={styles.sidebarFooter}>
+          <button onClick={onNavigateToOnboarding} style={styles.btnLogout}>
+            🚪 Keluar Aplikasi
+          </button>
           <div style={styles.sidebarVersion}>v1.0.0 © 2026</div>
         </div>
       </aside>
@@ -484,7 +481,7 @@ const styles = {
     width: '280px',
     backgroundColor: '#1E3A8A',
     color: 'white',
-    padding: '2.5rem 1.5rem',
+    padding: '2.5rem 1.5rem 1.5rem 1.5rem',
     display: 'flex',
     flexDirection: 'column',
     gap: '2rem',
@@ -536,7 +533,20 @@ const styles = {
   sidebarFooter: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem'
+    gap: '1rem',
+    marginTop: 'auto'
+  },
+  btnLogout: {
+    backgroundColor: '#EF4444',
+    color: 'white',
+    border: 'none',
+    padding: '0.8rem 1rem',
+    borderRadius: '12px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+    transition: '0.2s'
   },
   sidebarVersion: {
     fontSize: '0.8rem',
