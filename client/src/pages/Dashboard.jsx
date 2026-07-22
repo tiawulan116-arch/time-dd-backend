@@ -485,13 +485,16 @@ const Dashboard = ({ onNavigateToCalendar, onNavigateToOnboarding }) => {
   );
 };
 
-// Objek Stylesheet Vertikal Sempurna
+// Objek Stylesheet Sempurna (Sidebar Tetap di Kiri di Laptop & Konten Rapi)
 const styles = {
   dashboardLayout: {
     display: 'flex',
+    flexDirection: 'row',
     background: 'linear-gradient(135deg, #EBF3FF 0%, #F5F9FF 100%)',
     minHeight: '100vh',
-    fontFamily: '"Inter", sans-serif'
+    fontFamily: '"Inter", sans-serif',
+    width: '100%',
+    overflowX: 'hidden'
   },
   sidebar: {
     width: '280px',
@@ -501,7 +504,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '2rem',
-    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)'
+    boxShadow: '4px 0 20px rgba(30, 58, 138, 0.1)',
+    flexShrink: 0,
+    boxSizing: 'border-box'
   },
   sidebarHeader: {
     display: 'flex',
@@ -571,22 +576,27 @@ const styles = {
   },
   mainContent: {
     flexGrow: 1,
-    padding: '3rem 3.5rem',
-    overflowY: 'auto'
+    padding: 'clamp(1.5rem, 3vw, 3.5rem)',
+    overflowY: 'auto',
+    width: 'calc(100% - 280px)',
+    boxSizing: 'border-box'
   },
   mainHeaderCard: {
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    padding: '2.25rem 2.5rem',
+    padding: 'clamp(1.25rem, 3vw, 2.25rem)',
     borderRadius: '24px',
     boxShadow: '0 10px 30px rgba(30, 58, 138, 0.04)',
     border: '1px solid rgba(226, 232, 240, 0.8)',
-    marginBottom: '2.5rem'
+    marginBottom: '2rem',
+    gap: '1.25rem',
+    boxSizing: 'border-box'
   },
   headerTitle: {
-    fontSize: '2.25rem',
+    fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
     fontWeight: '900',
     color: '#1E3A8A',
     margin: 0,
@@ -595,68 +605,72 @@ const styles = {
   headerSubtitle: {
     color: '#64748B',
     marginTop: '0.5rem',
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     fontWeight: '500'
   },
   headerBtnGroup: {
     display: 'flex',
-    gap: '1rem'
+    flexWrap: 'wrap',
+    gap: '0.75rem'
   },
   btnCreate: {
     backgroundColor: '#10B981',
     color: 'white',
-    padding: '0.8rem 1.75rem',
+    padding: '0.75rem 1.25rem',
     border: 'none',
     borderRadius: '12px',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 8px 16px rgba(16, 185, 129, 0.15)',
-    transition: '0.2s'
+    transition: '0.2s',
+    fontSize: '0.9rem'
   },
   btnCalendar: {
     backgroundColor: '#4F46E5',
     color: 'white',
-    padding: '0.8rem 1.75rem',
+    padding: '0.75rem 1.25rem',
     border: 'none',
     borderRadius: '12px',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 8px 16px rgba(79, 70, 229, 0.15)',
-    transition: '0.2s'
+    transition: '0.2s',
+    fontSize: '0.9rem'
   },
   statsWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.5rem',
-    marginBottom: '2.5rem'
+    gap: '1.25rem',
+    marginBottom: '2rem'
   },
   gridStatus: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '1.5rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '1.25rem'
   },
   gridCategory: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '1.5rem'
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1.25rem'
   },
   cardStat: {
-    padding: '2rem 1.75rem',
+    padding: '1.5rem 1.25rem',
     borderRadius: '24px',
     cursor: 'pointer',
     position: 'relative',
     overflow: 'hidden',
     boxShadow: '0 10px 25px rgba(0,0,0,0.02)',
-    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+    boxSizing: 'border-box'
   },
   cardStatLabelDark: {
     color: '#374151',
-    fontSize: '1rem',
+    fontSize: '0.9rem',
     fontWeight: '800',
     letterSpacing: '0.3px'
   },
   cardStatNumDark: {
-    fontSize: '3.25rem',
+    fontSize: 'clamp(2.25rem, 5vw, 3.25rem)',
     fontWeight: '900',
     margin: '0.4rem 0 0 0',
     color: '#111827',
@@ -664,29 +678,32 @@ const styles = {
   },
   subPageWrapperCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: '28px',
-    padding: '2.5rem',
+    borderRadius: '24px',
+    padding: 'clamp(1.25rem, 3vw, 2.5rem)',
     boxShadow: '0 15px 35px rgba(30, 58, 138, 0.06)',
     border: '1px solid #E2E8F0',
     marginBottom: '1rem',
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
+    boxSizing: 'border-box'
   },
   subPageHeaderRow: {
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid #F1F5F9',
-    paddingBottom: '1.25rem'
+    paddingBottom: '1rem',
+    gap: '1rem'
   },
   subPagePreTitle: {
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     color: '#3B82F6',
     fontWeight: '800',
     letterSpacing: '1px'
   },
   subPageMainTitle: {
     margin: '0.25rem 0 0 0',
-    fontSize: '1.45rem',
+    fontSize: '1.25rem',
     fontWeight: '900',
     color: '#0F172A'
   },
@@ -694,29 +711,30 @@ const styles = {
     backgroundColor: '#1E293B',
     color: 'white',
     border: 'none',
-    padding: '0.65rem 1.25rem',
+    padding: '0.6rem 1.1rem',
     borderRadius: '10px',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
   },
   chartSection: {
     backgroundColor: 'white',
-    padding: '2.5rem',
-    borderRadius: '28px',
+    padding: 'clamp(1.25rem, 3vw, 2.5rem)',
+    borderRadius: '24px',
     boxShadow: '0 12px 40px rgba(30, 58, 138, 0.04)',
     border: '1px solid #E2E8F0',
-    marginTop: '1.5rem'
+    marginTop: '1.5rem',
+    boxSizing: 'border-box'
   },
   chartHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '2rem'
+    marginBottom: '1.5rem'
   },
   chartTitle: {
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     fontWeight: '800',
     color: '#1E293B',
     margin: 0
@@ -724,20 +742,20 @@ const styles = {
   chartBadge: {
     backgroundColor: '#EEF2F6',
     color: '#475569',
-    padding: '0.35rem 1rem',
+    padding: '0.3rem 0.75rem',
     borderRadius: '8px',
-    fontSize: '0.8rem',
+    fontSize: '0.75rem',
     fontWeight: '700'
   },
   chartProgressWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.5rem'
+    gap: '1.25rem'
   },
   progressItem: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.6rem'
+    gap: '0.5rem'
   },
   progressLabelRow: {
     display: 'flex',
@@ -745,12 +763,12 @@ const styles = {
     alignItems: 'center'
   },
   progressName: {
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     fontWeight: '700',
     color: '#475569'
   },
   progressVal: {
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     fontWeight: '800',
     color: '#1E293B'
   },
@@ -770,15 +788,15 @@ const styles = {
     marginTop: '1rem'
   },
   tableSectionTitle: {
-    fontSize: '1.2rem',
+    fontSize: '1.1rem',
     fontWeight: '800',
     color: '#1E293B',
-    marginBottom: '1.25rem'
+    marginBottom: '1rem'
   },
   emptyTableText: {
     textAlign: 'center',
     color: '#94A3B8',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
     padding: '2rem 0',
     backgroundColor: '#F8FAFC',
     borderRadius: '12px',
@@ -787,15 +805,16 @@ const styles = {
   dataTable: {
     width: '100%',
     borderCollapse: 'collapse',
-    textAlign: 'left'
+    textAlign: 'left',
+    minWidth: '600px'
   },
   tableHeaderRow: {
     borderBottom: '2px solid #E2E8F0',
     backgroundColor: '#F8FAFC'
   },
   thStyles: {
-    padding: '1rem',
-    fontSize: '0.85rem',
+    padding: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '800',
     color: '#475569',
     textTransform: 'uppercase',
@@ -806,42 +825,42 @@ const styles = {
     transition: 'background-color 0.2s ease'
   },
   tdStyles: {
-    padding: '1.1rem 1rem',
+    padding: '1rem 0.85rem',
     verticalAlign: 'middle'
   },
   taskCheckbox: {
-    transform: 'scale(1.25)',
+    transform: 'scale(1.2)',
     cursor: 'pointer',
     accentColor: '#10B981'
   },
   taskTextSpan: {
-    fontSize: '0.95rem',
+    fontSize: '0.9rem',
     fontWeight: '700',
     color: '#1E293B'
   },
   tableTimeSpan: {
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     color: '#64748B',
     fontWeight: '600'
   },
   badgeCategory: {
-    padding: '0.35rem 1rem',
+    padding: '0.3rem 0.85rem',
     borderRadius: '9999px',
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     fontWeight: '800',
     letterSpacing: '0.2px'
   },
   actionBtnGroup: {
     display: 'flex',
-    gap: '0.5rem'
+    gap: '0.4rem'
   },
   btnActionEditComponent: {
     backgroundColor: '#3B82F6',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 1rem',
+    padding: '0.45rem 0.85rem',
     borderRadius: '8px',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(59, 130, 246, 0.15)',
@@ -851,9 +870,9 @@ const styles = {
     backgroundColor: '#EF4444',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 1rem',
+    padding: '0.45rem 0.85rem',
     borderRadius: '8px',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(239, 68, 68, 0.15)',
@@ -875,9 +894,9 @@ const styles = {
     backgroundColor: '#10B981',
     color: 'white',
     border: 'none',
-    padding: '0.45rem 1.1rem',
+    padding: '0.45rem 0.9rem',
     borderRadius: '8px',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 10px rgba(16, 185, 129, 0.15)'
@@ -893,63 +912,69 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 999
+    zIndex: 999,
+    padding: '1rem',
+    boxSizing: 'border-box'
   },
   modalContentBox: {
     backgroundColor: 'white',
-    padding: '2.5rem',
+    padding: '1.75rem 1.5rem',
     borderRadius: '24px',
-    width: '450px',
+    width: '100%',
+    maxWidth: '450px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.2rem',
-    boxShadow: '0 20px 50px rgba(0,0,0,0.15)'
+    gap: '1rem',
+    boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
+    boxSizing: 'border-box'
   },
   modalContentTitle: {
     margin: 0,
-    fontSize: '1.35rem',
+    fontSize: '1.2rem',
     fontWeight: '800',
     color: '#0F172A'
   },
   modalFormWrapper: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.2rem'
+    gap: '1rem'
   },
   modalInputItem: {
     width: '100%',
-    padding: '0.85rem 1.1rem',
+    padding: '0.8rem 1rem',
     borderRadius: '12px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.95rem',
-    backgroundColor: '#F8FAFC'
+    fontSize: '0.9rem',
+    backgroundColor: '#F8FAFC',
+    boxSizing: 'border-box'
   },
   modalTimeFlex: {
     display: 'flex',
-    gap: '1rem'
+    gap: '0.75rem'
   },
   modalInputTime: {
     flex: 1,
-    padding: '0.85rem 1.1rem',
+    padding: '0.8rem 1rem',
     borderRadius: '12px',
     border: '1px solid #E2E8F0',
-    fontSize: '0.95rem',
-    backgroundColor: '#F8FAFC'
+    fontSize: '0.9rem',
+    backgroundColor: '#F8FAFC',
+    boxSizing: 'border-box'
   },
   modalBtnGroup: {
     display: 'flex',
     gap: '0.75rem',
-    marginTop: '0.5rem'
+    marginTop: '0.25rem'
   },
   modalBtnSubmit: {
     flex: 2,
     backgroundColor: '#2563EB',
     color: 'white',
-    padding: '0.85rem',
+    padding: '0.8rem',
     border: 'none',
     borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
   },
@@ -957,11 +982,11 @@ const styles = {
     flex: 1,
     backgroundColor: '#F1F5F9',
     color: '#475569',
-    padding: '0.85rem',
+    padding: '0.8rem',
     border: 'none',
     borderRadius: '12px',
     fontWeight: '700',
-    fontSize: '1rem',
+    fontSize: '0.95rem',
     cursor: 'pointer'
   }
 };
